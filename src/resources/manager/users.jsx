@@ -1,3 +1,4 @@
+import * as React from "react";
 import {
   Create,
   Datagrid,
@@ -8,50 +9,62 @@ import {
   SimpleForm,
   TextField,
   TextInput,
+  useGetList,
+  NumberInput,
+  TopToolbar,
+  CreateButton,
+  required,
 } from "react-admin";
-import * as React from "react";
+import md5 from "md5";
+import { userRoleChoices } from "../../constants/users";
 
 export const UserList = (props) => (
-  <List {...props}>
+  <List
+    actions={
+      <TopToolbar>
+        <CreateButton />
+      </TopToolbar>
+    }
+    {...props}
+  >
     <Datagrid rowClick="edit">
       <TextField source="id" />
-      <SelectField
-        source="role"
-        choices={[
-          { id: 0, name: "User" },
-          { id: 1, name: "Manager" },
-        ]}
-      />
-      <TextField source="login" />
-      <TextField source="password" />
-      {/* <ArrayField source="bookings"> */}
-      {/*  <Datagrid> */}
-      {/*    <ReferenceField label="User" source="userId" reference="users"> */}
-      {/*      <TextField source="login" /> */}
-      {/*    </ReferenceField> */}
-      {/*    <DateField source="start" showTime /> */}
-      {/*    <DateField source="end" showTime /> */}
-      {/*  </Datagrid> */}
-      {/* </ArrayField> */}
+      <SelectField source="role" choices={userRoleChoices} />
+      <TextField source="username" />
+      <TextField label="Password (hash)" source="password" />
     </Datagrid>
   </List>
 );
 
+const createOrEditTransform = (data) => ({
+  ...data,
+  password: md5(data.password),
+});
+
 export const UserCreate = (props) => {
-  console.log(props);
+  const { ids, loading, error } = useGetList(
+    "users",
+    { page: 1, perPage: 1 },
+    { field: "id", order: "DESC" }
+  );
+
+  if (loading || error) {
+    return null;
+  }
+
+  const id = ids.length ? ids[0] + 1 : 1;
 
   return (
-    <Create {...props}>
-      <SimpleForm redirect="list">
+    <Create {...props} transform={createOrEditTransform}>
+      <SimpleForm redirect="list" initialValues={() => ({ id })}>
+        <NumberInput disabled source="id" validate={required()} />
         <SelectInput
           source="role"
-          choices={[
-            { id: 0, name: "User" },
-            { id: 1, name: "Manager" },
-          ]}
+          choices={userRoleChoices}
+          validate={required()}
         />
-        <TextInput source="username" />
-        <PasswordInput source="password" />
+        <TextInput source="username" validate={required()} />
+        <PasswordInput source="password" validate={required()} />
       </SimpleForm>
     </Create>
   );

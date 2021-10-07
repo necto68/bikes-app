@@ -1,25 +1,22 @@
-import logo from './logo.svg';
-import './App.css';
+import * as React from "react";
+import { Admin } from "react-admin";
+import { authProvider } from "./auth-provider";
+import { dataProvider } from "./data-provider";
+import { managerResources } from "./resources/manager";
+import { userResources } from "./resources/user";
+import { LoginPage } from "./login-page";
+import { USER_ROLES } from "./constants/users";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" /> 
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+const App = () => (
+  <Admin
+    loginPage={LoginPage}
+    authProvider={authProvider}
+    dataProvider={dataProvider}
+  >
+    {(permissions) =>
+      permissions === USER_ROLES.manager ? managerResources : userResources
+    }
+  </Admin>
+);
 
 export default App;
