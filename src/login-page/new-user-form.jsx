@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Field, Form } from "react-final-form";
 import {
   Button,
@@ -7,10 +7,9 @@ import {
   TextField,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { useNotify, useCreate } from "react-admin";
+import { useNotify, useDataProvider } from "react-admin";
 import md5 from "md5";
 import { USER_ROLES } from "../constants/users";
-import { dataProvider } from "../data-provider";
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -67,37 +66,36 @@ const validate = (values) => {
 export const NewUserForm = (props) => {
   const notify = useNotify();
   const classes = useStyles(props);
-  const [nextUserId, setNextUserId] = useState(null);
+  const dataProvider = useDataProvider();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [create, { loading }] = useCreate();
-
-  const fetchId = useCallback(async () => {
-    const { data } = await dataProvider.getList("users", {
-      pagination: { page: 1, perPage: 1 },
-      sort: { field: "username", order: "DESC" },
-      filter: {},
-    });
-
-    setNextUserId(data[0].id ? data[0].id + 1 : 1);
-  }, []);
-
-  useEffect(() => {
-    fetchId();
-  }, [fetchId]);
-
-  const submit = (values) => {
+  const submit = async (values) => {
+    setIsLoading(true);
     const { username, password } = values;
 
-    const newUser = {
-      id: nextUserId,
-      role: USER_ROLES.user,
-      username,
-      password: md5(password),
-    };
+    const { data } = await dataProvider.getList("users", {
+      pagination: { page: 1, perPage: 1 },
+      sort: { field: "username", order: "ASC" },
+      filter: {
+        username,
+      },
+    });
 
-    create("users", newUser);
-    notify("User was created", "success");
-    props.goBackHandler();
+    if (data.length) {
+      notify("This username is already used. Please use another one.", "error");
+    } else {
+      const newUser = {
+        role: USER_ROLES.user,
+        username,
+        password: md5(password),
+      };
+
+      await dataProvider.create("users", { data: newUser });
+      notify("User was created", "success");
+      props.goBackHandler();
+    }
+
+    setIsLoading(false);
   };
 
   return (
@@ -114,7 +112,7 @@ export const NewUserForm = (props) => {
                 name="username"
                 component={Input}
                 label="Username"
-                disabled={loading}
+                disabled={isLoading}
               />
             </div>
             <div className={classes.input}>
@@ -124,7 +122,7 @@ export const NewUserForm = (props) => {
                 component={Input}
                 label="Password"
                 type="password"
-                disabled={loading}
+                disabled={isLoading}
               />
             </div>
             <div className={classes.input}>
@@ -134,7 +132,7 @@ export const NewUserForm = (props) => {
                 component={Input}
                 label="Repeat your password"
                 type="password"
-                disabled={loading}
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -143,10 +141,10 @@ export const NewUserForm = (props) => {
               variant="contained"
               type="submit"
               color="primary"
-              disabled={loading}
+              disabled={isLoading}
               className={classes.button}
             >
-              {loading && (
+              {isLoading && (
                 <CircularProgress
                   className={classes.icon}
                   size={18}

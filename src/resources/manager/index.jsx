@@ -5,7 +5,7 @@ import {
   DirectionsBike as DirectionsBikeIcon,
 } from "@material-ui/icons";
 import { BikeList, BikeCreate, BikeEdit } from "./bikes";
-import { UserList, UserCreate } from "./users";
+import { UserList, UserCreate, UserEdit } from "./users";
 
 export const managerResources = [
   <Resource
@@ -19,6 +19,7 @@ export const managerResources = [
     name="users"
     list={UserList}
     create={UserCreate}
+    edit={UserEdit}
     icon={PeopleIcon}
   />,
 ];

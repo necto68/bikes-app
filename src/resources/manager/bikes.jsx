@@ -15,8 +15,6 @@ import {
   useListFilterContext,
   SelectField,
   SelectInput,
-  useGetList,
-  NumberInput,
   CreateButton,
   TopToolbar,
   required,
@@ -83,51 +81,35 @@ export const BikeList = (props) => (
   </List>
 );
 
-export const BikeCreate = (props) => {
-  const { ids, loading, error } = useGetList(
-    "bikes",
-    { page: 1, perPage: 1 },
-    { field: "id", order: "DESC" }
-  );
-
-  if (loading || error) {
-    return null;
-  }
-
-  const id = ids.length ? ids[0] + 1 : 1;
-
-  return (
-    <Create {...props}>
-      <SimpleForm
-        redirect="list"
-        initialValues={() => ({
-          id,
-          rating: "",
-          ratingSource: [],
-          reservations: [],
-        })}
-      >
-        <NumberInput disabled source="id" validate={required()} />
-        <SelectInput
-          source="model"
-          choices={bikeModelChoices}
-          validate={required()}
-        />
-        <SelectInput
-          source="color"
-          choices={bikeColorChoices}
-          validate={required()}
-        />
-        <SelectInput
-          source="location"
-          choices={bikeLocationChoices}
-          validate={required()}
-        />
-        <BooleanInput source="isAvailable" defaultValue validate={required()} />
-      </SimpleForm>
-    </Create>
-  );
-};
+export const BikeCreate = (props) => (
+  <Create {...props}>
+    <SimpleForm
+      redirect="list"
+      initialValues={() => ({
+        rating: "",
+        ratingSource: [],
+        reservations: [],
+      })}
+    >
+      <SelectInput
+        source="model"
+        choices={bikeModelChoices}
+        validate={required()}
+      />
+      <SelectInput
+        source="color"
+        choices={bikeColorChoices}
+        validate={required()}
+      />
+      <SelectInput
+        source="location"
+        choices={bikeLocationChoices}
+        validate={required()}
+      />
+      <BooleanInput source="isAvailable" defaultValue validate={required()} />
+    </SimpleForm>
+  </Create>
+);
 
 export const BikeEdit = (props) => (
   <Edit {...props}>
